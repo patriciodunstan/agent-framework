@@ -45,10 +45,14 @@ local de proyecto), parametrizada por stack tecnológico y por perfil de entorno
 | 3 | Alcance v1 | Núcleo + generador Claude Code + los 5 presets (Copilot en v2) |
 | 4 | Implementación del instalador | Script Python (`install.py`), cross-plataforma, cero dependencias |
 | 5 | Global vs local | Un repo, una fuente de verdad, dos *scopes* de salida (global / project) |
+| 6 | Host git en ambos entornos | **GitHub** (personal y trabajo usan GitHub para repos) |
+| 7 | Ticket/work-item en trabajo | Azure Boards (`AB#123`), rama `feature/AB#123-desc` |
+| 8 | Docker / Kubernetes | Eje **addon** ortogonal (`--addons docker,k8s`), incluido en v1 |
 
-## Modelo conceptual: 3 ejes ortogonales
+## Modelo conceptual: 3 ejes + addons
 
-Una instalación se define como **`core` (neutral) + `scope` × `stack` × `profile`**.
+Una instalación se define como
+**`core` (neutral) + `scope` × `stack` × `profile` (+ `addons` opcionales)**.
 Separar estos ejes es lo que evita duplicación y drift.
 
 - **scope** — nivel de salida:
@@ -59,13 +63,27 @@ Separar estos ejes es lo que evita duplicación y drift.
 - **stack** — lenguaje/patrones técnicos: `python-fastapi`, `java-springboot`,
   `dotnet`, `react-vite`, `aws-lambda`. Define comandos de test/lint/build/typecheck,
   estructura de carpetas y skills técnicas.
-- **profile** — entorno de trabajo: `personal` vs `work`. Define agente(s), host git,
-  sistema de CI (GitHub Actions vs Azure DevOps) y convención de ticket/rama.
+- **profile** — entorno de trabajo: `personal` vs `work`. **Ambos usan GitHub como
+  host de repos**; el profile diferencia por CI, nube, infraestructura, agente y
+  convención de ticket/rama:
+
+  | Campo | `personal` | `work` |
+  |-------|-----------|--------|
+  | git host | GitHub | GitHub |
+  | CI / pipelines | GitHub Actions | Azure DevOps pipelines *(migración a GH Actions pendiente ~2027)* |
+  | Nube / hosting | AWS | Azure (resource groups, agentes) |
+  | Agente | Claude | Copilot *(v2)* |
+  | Ticket / rama | GitHub Issues `#123` / `feature/123-desc` | Azure Boards `AB#123` / `feature/AB#123-desc` |
+
+- **addons** — capas ortogonales opcionales que se superponen a cualquier stack:
+  `docker`, `k8s`. Agregan context/skills de contenedores y orquestación sin duplicar
+  ese conocimiento en cada preset. Se activan con `--addons docker,k8s`.
 
 Ejemplo del porqué de la separación: `UDLA_backend_ssh` es
-`stack=python-fastapi` + `profile=work` (Azure DevOps, `AB#`); un futuro proyecto
-personal en Python sería `stack=python-fastapi` + `profile=personal` (GitHub, `#`).
-Comparten el 90%; solo difieren en CI y ticket, que viven en el `profile`.
+`stack=python-fastapi` + `profile=work` (CI Azure Pipelines, `AB#`); un futuro proyecto
+personal en Python sería `stack=python-fastapi` + `profile=personal` (GitHub Actions,
+`#`). Comparten el 90%; solo difieren en CI, nube y ticket, que viven en el `profile`.
+La migración de pipelines del próximo año = cambiar un campo (`ci:` en `work.yaml`).
 
 ## Arquitectura del repositorio
 
@@ -87,6 +105,9 @@ agent-framework/
 │   ├── react-vite/
 │   └── aws-lambda/
 ├── profiles/                   # personal.yaml · work.yaml
+├── addons/                     # capas ortogonales opcionales
+│   ├── docker/                 # context/skills de contenedores
+│   └── k8s/                    # context/skills de orquestación
 ├── generators/
 │   └── claude/                 # v1: (core+preset+profile) → salida para Claude Code
 │                               # v2 (futuro): generators/copilot/
@@ -136,11 +157,27 @@ maturity: real                     # real | plantilla-base
 # profiles/work.yaml
 profile: work
 agents: [claude]                   # v2: [claude, copilot]
-git_host: azure-devops
-ci: azure-pipelines
-ticket_format: "AB#<número>"
+git_host: github                   # los repos de trabajo también viven en GitHub
+ci: azure-pipelines                # migración a github-actions pendiente (~2027)
+cloud: azure                       # resource groups, agentes
+ticket_format: "AB#<número>"       # Azure Boards
 branch_pattern: "feature/AB#<n>-descripcion"
+
+# profiles/personal.yaml
+# profile: personal
+# agents: [claude]
+# git_host: github
+# ci: github-actions
+# cloud: aws
+# ticket_format: "#<número>"       # GitHub Issues
+# branch_pattern: "feature/<n>-descripcion"
 ```
+
+> **Presets de trabajo, nota de realidad**: el stack Java del entorno de trabajo usa
+> un framework interno llamado **"nano"** (sobre Spring Boot, orientado a BFF). Como es
+> propietario, el preset `java-springboot` es `plantilla-base`: cubre el Spring Boot
+> genérico y deja marcado dónde encajan las convenciones de `nano` para endurecerlo al
+> usarlo en un proyecto real.
 
 ### `generators/claude/` — traductor a Claude Code
 
@@ -156,16 +193,21 @@ Toma `core + preset + profile` y, según el `scope`, emite:
   - `docs/adr/{README.md,template.md}`.
   - Entrada `.claude/` en `.gitignore` (según estándar #2).
 
+Si se pasan `--addons`, el generador **superpone** el context/skills de cada addon
+sobre la salida del stack (después del stack, para que un addon pueda añadir sin pisar).
+
 En v2 se agrega `generators/copilot/` que consume la **misma** `core` y emite
 `.github/copilot-instructions.md` + `AGENTS.md` + prompt files.
 
 ## Flujo de datos
 
 ```
-core/ (neutral) ─┐
-presets/<stack> ─┼─► install.py ─► generators/<agente> ─► árbol de archivos escrito
-profiles/<prof> ─┘        │                                   (según --scope y --target)
-                          └── resuelve placeholders con string.Template (stdlib)
+core/ (neutral) ──┐
+presets/<stack> ──┤
+profiles/<prof> ──┼─► install.py ─► generators/<agente> ─► árbol de archivos escrito
+addons/<addon>* ──┘        │                                  (según --scope y --target)
+                           └── resuelve placeholders con string.Template (stdlib);
+                               los addons se superponen tras el stack
 ```
 
 ## El instalador (`install.py`)
@@ -176,9 +218,9 @@ Uso:
 # Restaurar/actualizar tu entorno global personal (backup de máquina)
 python install.py --scope global --profile personal
 
-# Estampar un proyecto de trabajo Spring Boot en Azure DevOps
+# Estampar un proyecto de trabajo Spring Boot (nano/BFF) con Docker + Kubernetes
 python install.py --scope project --stack java-springboot --profile work \
-  --target C:\repos\mi-servicio
+  --addons docker,k8s --target C:\repos\mi-servicio
 
 # Proyecto personal Python, sobre el directorio actual
 python install.py --scope project --stack python-fastapi --profile personal --target .
@@ -204,6 +246,8 @@ Comportamiento:
   archivo con `${...}` sin resolver). Esto también es un test.
 - Preset con `maturity: plantilla-base` → el instalador imprime un aviso: *"preset sin
   probar en proyecto real; revísalo antes de confiar en él"*.
+- Addon inexistente en `--addons` → error claro listando los addons disponibles, antes
+  de escribir nada.
 
 ## Testing (estándar "flujo real")
 
@@ -217,6 +261,8 @@ Comportamiento:
 3. **Smoke de equivalencia**: para `python-fastapi` + `project`, el `.claude/` generado
    es estructuralmente equivalente al de `UDLA_backend_ssh` (validación contra la
    realidad de origen).
+4. **Addons**: instalar `--addons docker,k8s` sobre un stack agrega el context/skills
+   de contenedores sin romper la salida base ni la idempotencia.
 
 ## Fidelidad de los presets (honestidad, no humo)
 
@@ -252,6 +298,8 @@ Comportamiento:
 2. `core/` extraído y generalizado desde las configs reales.
 3. Presets reales (`python-fastapi`, `react-vite`) + validación por equivalencia.
 4. Generador Claude para ambos scopes (global y project).
-5. Presets plantilla-base (`java-springboot`, `dotnet`, `aws-lambda`).
-6. Suite de tests (golden-master, idempotencia, smoke) + ruff.
-7. README + ADRs propios + primer push a GitHub personal.
+5. Presets plantilla-base (`java-springboot` con notas de `nano`/BFF, `dotnet`,
+   `aws-lambda`).
+6. Addons `docker` y `k8s` (overlay ortogonal) + su aplicación en el generador.
+7. Suite de tests (golden-master, idempotencia, smoke, addons) + ruff.
+8. README + ADRs propios + primer push a GitHub personal.
