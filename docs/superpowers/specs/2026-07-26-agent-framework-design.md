@@ -108,6 +108,12 @@ de cada fragmento se documenta en el plan de implementación.
 
 ### `presets/<stack>/preset.yaml` — el corazón
 
+> **Nota de formato**: los ejemplos usan sintaxis YAML por legibilidad, pero el
+> formato de serialización concreto es **decisión del plan**, acotada por el objetivo
+> de cero dependencias. Candidatos stdlib: TOML (`tomllib`, requiere Python 3.11+) o
+> JSON. YAML solo si se acepta PyYAML como única dependencia. El resto del diseño es
+> agnóstico al formato elegido.
+
 Cada preset es **datos** que rellenan los placeholders del núcleo:
 
 ```yaml
@@ -183,9 +189,10 @@ Comportamiento:
 - **Idempotente** (igual que el `/setup-standards` actual): no pisa lo que ya existe;
   agrega solo lo que falta y **reporta** qué creó / qué ya estaba / qué queda por
   commitear. No commitea nada en el proyecto destino.
-- **Cero dependencias**: solo stdlib (`argparse`, `pathlib`, `string.Template`,
-  y un lector YAML mínimo o `json`/formato simple si se evita PyYAML — se decide en
-  el plan). Objetivo: correr en cualquier máquina con Python 3.10+ sin `pip install`.
+- **Cero dependencias** (objetivo): solo stdlib (`argparse`, `pathlib`,
+  `string.Template`, y lector de presets según el formato que elija el plan — ver
+  "Nota de formato"). Meta: correr en cualquier máquina con Python 3.11+ sin
+  `pip install`. La versión mínima de Python se fija en el plan junto con el formato.
 - **Validación de entrada**: combinaciones inválidas (stack/profile/scope inexistente)
   fallan con mensaje claro antes de escribir nada.
 
