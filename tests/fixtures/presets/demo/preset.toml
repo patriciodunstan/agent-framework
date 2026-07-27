@@ -1,0 +1,12 @@
+stack = "demo"
+language = "Demo 1.0"
+structure = "app/"
+skills = ["demo-skill"]
+precommit = ["test"]
+maturity = "real"
+
+[commands]
+test = "demo test"
+lint = "demo lint"
+typecheck = "demo typecheck"
+build = ""

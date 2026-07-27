@@ -1,0 +1,7 @@
+profile = "demo"
+agents = ["claude"]
+git_host = "github"
+ci = "github-actions"
+cloud = "aws"
+ticket_format = "#<número>"
+branch_pattern = "feature/<n>-descripcion"
