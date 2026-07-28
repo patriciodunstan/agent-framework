@@ -1,0 +1,7 @@
+profile = "work"
+agents = ["claude"]
+git_host = "github"
+ci = "azure-pipelines"
+cloud = "azure"
+ticket_format = "AB#<número>"
+branch_pattern = "feature/AB#<n>-descripcion"

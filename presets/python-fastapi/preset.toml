@@ -1,0 +1,22 @@
+stack = "python-fastapi"
+language = "Python 3.12+"
+maturity = "real"
+skills = ["async-python-patterns", "fastapi-templates", "python-testing-patterns",
+          "python-design-patterns", "sql-optimization-patterns"]
+precommit = ["test", "lint"]
+structure = """
+app/
+├── core/        # config, security, exceptions
+├── api/         # routers/endpoints
+├── services/    # lógica de negocio
+├── models/      # dominio
+├── schemas/     # Pydantic DTOs
+└── db/          # repositories
+tests/
+"""
+
+[commands]
+test = "pytest tests/ -q"
+lint = "ruff check app/"
+typecheck = "mypy app/"
+build = ""

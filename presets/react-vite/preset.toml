@@ -1,0 +1,18 @@
+stack = "react-vite"
+language = "TypeScript + React (Vite)"
+maturity = "real"
+skills = []
+precommit = ["lint", "build"]
+structure = """
+src/
+├── components/
+├── pages/
+├── services/
+└── hooks/
+"""
+
+[commands]
+test = "npm test"
+lint = "npx eslint src/"
+typecheck = "tsc --noEmit"
+build = "npm run build"
