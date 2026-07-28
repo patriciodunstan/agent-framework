@@ -41,3 +41,18 @@ def test_springboot_is_plantilla_base_warns(tmp_path, capsys):
     assert code == 0
     assert "plantilla-base" in out
     assert "sin probar" in (tmp_path / "CLAUDE.md").read_text(encoding="utf-8").lower()
+
+
+def test_addons_overlay_skills(tmp_path):
+    code = _install(tmp_path, "java-springboot", "work", "docker,k8s")
+    assert code == 0
+    docker_skill = tmp_path / ".claude" / "skills" / "docker-patterns" / "SKILL.md"
+    k8s_skill = tmp_path / ".claude" / "skills" / "k8s-patterns" / "SKILL.md"
+    assert docker_skill.exists()
+    assert k8s_skill.exists()
+    # verify ${stack} was substituted
+    assert "java-springboot" in docker_skill.read_text(encoding="utf-8")
+    assert "java-springboot" in k8s_skill.read_text(encoding="utf-8")
+    # verify no unresolved placeholders
+    for md in tmp_path.rglob("*.md"):
+        assert find_unresolved(md.read_text(encoding="utf-8")) == [], md
