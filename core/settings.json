@@ -1,4 +1,5 @@
 {
+  "_origen": "UDLA_backend_ssh/.claude/settings.json (base mínima, despojado de permisos específicos)",
   "mcpServers": {
     "context7": {
       "command": "npx",
