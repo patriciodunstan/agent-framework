@@ -1,0 +1,15 @@
+stack = "aws-lambda"
+language = "Python 3.12 (AWS Lambda)"
+maturity = "plantilla-base"
+skills = ["async-python-patterns"]
+precommit = ["test", "lint"]
+structure = """
+lambda_function.py
+tests/
+"""
+
+[commands]
+test = "pytest tests/ -q"
+lint = "ruff check ."
+typecheck = "mypy ."
+build = ""

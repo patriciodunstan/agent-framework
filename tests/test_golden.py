@@ -33,3 +33,11 @@ def test_react_vite_personal_installs_clean(tmp_path):
     # ningún archivo generado conserva placeholders sin resolver
     for md in tmp_path.rglob("*.md"):
         assert find_unresolved(md.read_text(encoding="utf-8")) == [], md
+
+
+def test_springboot_is_plantilla_base_warns(tmp_path, capsys):
+    code = _install(tmp_path, "java-springboot", "work")
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "plantilla-base" in out
+    assert "sin probar" in (tmp_path / "CLAUDE.md").read_text(encoding="utf-8").lower()

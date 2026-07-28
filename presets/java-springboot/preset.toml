@@ -1,0 +1,17 @@
+stack = "java-springboot"
+language = "Java 21 + Spring Boot"
+maturity = "plantilla-base"
+skills = []
+precommit = ["test", "build"]
+structure = """
+src/main/java/...   # controllers, services, repositories
+src/test/java/...
+# NOTA: en trabajo se usa el framework interno 'nano' (sobre Spring Boot, para BFF).
+# Ajustar convenciones de 'nano' al endurecer este preset.
+"""
+
+[commands]
+test = "mvn test"
+lint = "mvn spotless:check"
+typecheck = ""
+build = "mvn -q package"

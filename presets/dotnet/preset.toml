@@ -1,0 +1,15 @@
+stack = "dotnet"
+language = "C# / .NET 8"
+maturity = "plantilla-base"
+skills = []
+precommit = ["test", "build"]
+structure = """
+src/        # proyectos .csproj
+tests/
+"""
+
+[commands]
+test = "dotnet test"
+lint = "dotnet format --verify-no-changes"
+typecheck = ""
+build = "dotnet build -c Release"
