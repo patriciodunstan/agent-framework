@@ -3,6 +3,7 @@ from pathlib import Path
 from framework.context import build_context
 from framework.generators.claude import generate
 from framework.loader import load_preset, load_profile
+from framework.render import find_unresolved
 
 FIX = Path(__file__).parent / "fixtures"
 
@@ -28,7 +29,7 @@ def test_global_scope_emits_claude_md_and_global_commands():
     assert ".claude/commands/manage-context.md" in rel
     body = next(f.content for f in files if f.relpath == ".claude/CLAUDE.md")
     assert "Lenguaje Demo 1.0." in body  # estándar renderizado
-    assert "${" not in body
+    assert find_unresolved(body) == []
 
 
 def test_project_scope_emits_expected_tree_and_skills():
@@ -40,4 +41,4 @@ def test_project_scope_emits_expected_tree_and_skills():
     assert {"CLAUDE.md", "AGENTS.md", ".claude/settings.json",
             ".claude/commands/new-ticket.md", ".claude/context/MEMORY.md",
             "docs/adr/README.md", ".claude/skills/demo-skill/SKILL.md"} <= rel
-    assert all("${" not in f.content for f in files)
+    assert all(find_unresolved(f.content) == [] for f in files)

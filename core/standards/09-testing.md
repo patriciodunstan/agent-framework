@@ -27,11 +27,9 @@ ejerciten el flujo completo end-to-end, no solo unidades mockeadas.
 
 ### Protocolo Pre-commit
 
-Antes de hacer push de cambios, SIEMPRE:
-
-${precommit_steps}
-
-Si algún test falla, no commitear. Fix primero.
+Antes de hacer push de cambios, SIEMPRE ejecutá los tests y el lint del proyecto
+(los comandos concretos están en el `CLAUDE.md` del proyecto y en el command
+`/run-tests`). Si algún test o lint falla, no commitees. Fix primero.
 
 ### Regression Testing
 

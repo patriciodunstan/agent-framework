@@ -37,3 +37,24 @@ def test_global_scope_matrix(tmp_path):
                      "--home", str(tmp_path / profile), "--root", str(ROOT)])
         assert code == 0
         assert (tmp_path / profile / ".claude" / "CLAUDE.md").exists()
+
+
+def test_global_standards_are_profile_neutral(tmp_path):
+    """El CLAUDE.md global (por máquina) no debe hornear convenciones de un
+    profile ni dejar secciones vacías: los estándares son principios portables."""
+    bodies = {}
+    for profile in PROFILES:
+        code = main(["--scope", "global", "--profile", profile,
+                     "--home", str(tmp_path / profile), "--root", str(ROOT)])
+        assert code == 0
+        bodies[profile] = (tmp_path / profile / ".claude" / "CLAUDE.md").read_text(
+            encoding="utf-8"
+        )
+        # sin placeholders sin resolver
+        assert find_unresolved(bodies[profile]) == []
+        # sin sección pre-commit vacía (encabezado seguido de vacío)
+        assert "SIEMPRE:\n\n" not in bodies[profile]
+
+    # el ticket_format de 'work' (AB#) NO debe quedar horneado en el global
+    assert "AB#" not in bodies["work"]
+    assert "AB#" not in bodies["personal"]

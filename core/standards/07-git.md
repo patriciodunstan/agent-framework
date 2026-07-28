@@ -15,7 +15,8 @@ Ejemplos:
 
 - `main` / `master`: Producción
 - `develop`: Integración
-- `${branch_pattern}`: Features y fixes (adaptar al ticket_format `${ticket_format}`)
+- Ramas de trabajo (features/fixes): usan el patrón de rama y el formato de ticket
+  que declara el `CLAUDE.md` del proyecto (p. ej. `feature/<id>-descripcion`)
 - `hotfix/descripcion`: Fixes urgentes a producción
 
 ### Reglas
