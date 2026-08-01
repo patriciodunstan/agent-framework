@@ -58,8 +58,18 @@ def generate(*, core_dir: Path, presets_dir: Path, addons_dir: Path,
     if scope == "global":
         header = render(read_text(core_dir / "copilot" / "instructions-global-header.md"),
                         context, source="core/copilot/instructions-global-header.md")
-        body = header + "\n" + standards_body(core_dir, context)
-        return [OutputFile(".copilot/copilot-instructions.md", body)]
+        std_body = standards_body(core_dir, context)
+        files = [OutputFile(".copilot/copilot-instructions.md", header + "\n" + std_body)]
+        # Para VS Code Copilot Chat: estándares globales como instructions folder + prompts
+        # globales (stack-agnósticos). Se activan apuntando settings a ~/.copilot/ (ver README).
+        std_instr = ("---\ndescription: Estándares de ingeniería (global)\n"
+                     "applyTo: '**'\n---\n\n" + std_body)
+        files.append(OutputFile(".copilot/instructions/standards.instructions.md", std_instr))
+        for f in sorted((core_dir / "copilot" / "global-prompts").glob("*.prompt.md")):
+            files.append(rendered(f, context, f".copilot/prompts/{f.name}"))
+        files.append(rendered(core_dir / "copilot" / "global-readme.md", context,
+                              ".copilot/README-vscode.md"))
+        return files
 
     if scope == "project":
         files: list[OutputFile] = [

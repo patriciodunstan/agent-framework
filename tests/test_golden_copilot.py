@@ -101,6 +101,27 @@ def test_copilot_global_emits_copilot_instructions(tmp_path):
     _no_unresolved(tmp_path)
 
 
+def test_copilot_global_emits_vscode_prompts_and_instructions(tmp_path):
+    code = main(["--scope", "global", "--agent", "copilot", "--profile", "personal",
+                 "--home", str(tmp_path), "--root", str(ROOT)])
+    assert code == 0
+    cop = tmp_path / ".copilot"
+    # estándares globales para VS Code (instructions folder con applyTo)
+    std = cop / "instructions" / "standards.instructions.md"
+    assert std.exists()
+    assert "applyTo: '**'" in std.read_text(encoding="utf-8")
+    # prompts globales stack-agnósticos
+    assert (cop / "prompts" / "review-changes.prompt.md").exists()
+    assert (cop / "prompts" / "setup-standards.prompt.md").exists()
+    # guía para cablear los settings de VS Code
+    readme = cop / "README-vscode.md"
+    assert readme.exists()
+    assert "chat.promptFilesLocations" in readme.read_text(encoding="utf-8")
+    assert "chat.instructionsFilesLocations" in readme.read_text(encoding="utf-8")
+    # sin placeholders sin resolver (los prompts globales son stack-agnósticos)
+    _no_unresolved(tmp_path)
+
+
 def test_default_agent_is_claude(tmp_path):
     # sin --agent, sigue generando Claude (retrocompatibilidad)
     code = main(["--scope", "project", "--stack", "react-vite", "--profile", "personal",
