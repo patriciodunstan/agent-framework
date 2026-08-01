@@ -5,8 +5,8 @@ agent: 'agent'
 ---
 
 Analizá el diff (`git diff HEAD`) y los archivos modificados para determinar qué
-documentación de contexto del proyecto conviene actualizar (por ejemplo
-`.github/copilot-instructions.md` o `docs/`).
+documentación de contexto del proyecto conviene actualizar (`docs/context/` — arrancá por
+`docs/context/MEMORY.md` — o `.github/copilot-instructions.md`).
 
 Actualizá solo las secciones afectadas — no reescribas archivos completos.
 

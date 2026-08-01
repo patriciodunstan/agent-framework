@@ -6,6 +6,9 @@ host git `${git_host}`. Tickets `${ticket_format}`, ramas `${branch_pattern}`.
 Complementá estas instrucciones con `AGENTS.md` (en la raíz del repo) y con mis
 estándares globales de Copilot (`~/.copilot/copilot-instructions.md`).
 
+**Memoria del proyecto:** consultá y mantené actualizada la documentación de contexto en
+`docs/context/` (arrancá por `docs/context/MEMORY.md`); las decisiones formales van en `docs/adr/`.
+
 ${maturity_warning}
 ## Estructura
 
