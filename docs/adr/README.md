@@ -22,5 +22,6 @@ estado `reemplazada por ADR-NNNN`. No se borran los ADR — son registro histór
 | [0001](0001-nucleo-neutral-generadores.md) | Núcleo neutral + generadores por agente | proyecto | aceptada |
 | [0002](0002-tres-ejes-scope-stack-profile.md) | Modelo core + scope×stack×profile + addons | proyecto | aceptada |
 | [0003](0003-cero-dependencias-toml.md) | Instalador Python cero-deps + TOML + Python 3.11+ | proyecto | aceptada |
+| [0004](0004-generador-copilot.md) | Generador GitHub Copilot vía `--agent`, reutilizando `core/` | proyecto | aceptada |
 
 <!-- origen: core/adr/README.md (adaptado, Ámbito: proyecto) -->

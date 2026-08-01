@@ -1,8 +1,9 @@
 # agent-framework
 
-Configurador portable de agentes de IA (Claude Code). Extrae el conocimiento
-reutilizable a una fuente única neutral y lo **estampa** en cualquier máquina o
-proyecto mediante un instalador Python sin dependencias externas.
+Configurador portable de agentes de IA (**Claude Code** y **GitHub Copilot**). Extrae el
+conocimiento reutilizable a una fuente única neutral y lo **estampa** en cualquier máquina o
+proyecto mediante un instalador Python sin dependencias externas. Una sola fuente `core/`,
+múltiples agentes de salida.
 
 ---
 
@@ -34,12 +35,22 @@ Una instalación se define como:
 core (neutral) + scope × stack × profile (+ addons opcionales)
 ```
 
+### agente — `--agent {claude,copilot}` (default `claude`)
+
+Selecciona el generador de salida. La fuente `core/` es la misma; cada agente la traduce
+a su formato:
+
+| agente | scope `global` | scope `project` |
+|--------|----------------|-----------------|
+| `claude` | `~/.claude/CLAUDE.md` + commands globales | `.claude/` (commands, agents, skills, context), `CLAUDE.md`, `AGENTS.md`, `docs/adr/` |
+| `copilot` | `~/.copilot/copilot-instructions.md` | `.github/copilot-instructions.md`, `AGENTS.md`, `.github/prompts/*.prompt.md` (los 6 commands, invocables con `/`) |
+
 ### scope — nivel de salida
 
 | Valor | Destino | Cuándo |
 |-------|---------|--------|
-| `global` | `~/.claude/` | Una vez por máquina; reconstruye el entorno base del agente |
-| `project` | `<directorio>/.claude/` | Por cada proyecto nuevo que se quiere configurar |
+| `global` | `~/.claude/` o `~/.copilot/` según agente | Una vez por máquina; reconstruye el entorno base del agente |
+| `project` | `.claude/` o `.github/` según agente | Por cada proyecto nuevo que se quiere configurar |
 
 ### stack — lenguaje/patrones técnicos
 
@@ -56,7 +67,7 @@ nube, agente y convención de ticket/rama:
 | git host | GitHub | GitHub |
 | CI / pipelines | GitHub Actions | Azure DevOps pipelines *(migración a GH Actions pendiente ~2027)* |
 | Nube / hosting | AWS | Azure |
-| Agente | Claude Code | Claude Code *(Copilot en v2)* |
+| Agente | Claude Code | Claude Code y/o GitHub Copilot (`--agent`) |
 | Ticket / rama | GitHub Issues `#123` / `feature/123-desc` | Azure Boards `AB#123` / `feature/AB#123-desc` |
 
 ### addons — capas opcionales ortogonales
@@ -83,10 +94,25 @@ python install.py --scope project --stack java-springboot --profile work \
 
 # Proyecto personal Python, sobre el directorio actual
 python install.py --scope project --stack python-fastapi --profile personal --target .
+
+# Estampar un proyecto de trabajo para GitHub Copilot (VS Code Copilot Chat)
+python install.py --scope project --agent copilot --stack python-fastapi --profile work \
+  --target C:\repos\mi-servicio
 ```
 
 El instalador es **idempotente**: no pisa archivos que ya existen; agrega solo lo que
 falta y reporta qué creó / qué ya estaba. No hace commit en el proyecto destino.
+
+### GitHub Copilot en VS Code
+
+Con `--agent copilot --scope project`, VS Code Copilot Chat lee `.github/copilot-instructions.md`
+automáticamente en cada request, y los `.github/prompts/*.prompt.md` quedan invocables
+escribiendo `/` en el chat (`/new-ticket`, `/run-tests`, `/review-pr`, …).
+
+El scope `global` (`--agent copilot --scope global`) escribe
+`~/.copilot/copilot-instructions.md`, que **Copilot CLI** lee nativamente. Para que
+**VS Code** también lo use, apuntá el setting `chat.instructionsFilesLocations` a ese
+archivo (o sincronizá tus instrucciones de usuario con Settings Sync).
 
 ---
 
@@ -110,9 +136,11 @@ falta y reporta qué creó / qué ya estaba. No hace commit en el proyecto desti
 
 ---
 
-## `.claude/` se ignora en git
+## Qué se commitea y qué no
 
-La carpeta `.claude/` generada en cada proyecto es tooling local del desarrollador
-y **no se commitea**. El instalador la agrega automáticamente a `.gitignore` (estándar
-de ingeniería #2 del framework). El conocimiento del proyecto (decisiones, specs) vive
-en `docs/`.
+- **Claude (`.claude/`)**: es tooling local del desarrollador y **no se commitea**. El
+  instalador la agrega automáticamente a `.gitignore` (estándar de ingeniería #2). El
+  conocimiento del proyecto (decisiones, specs) vive en `docs/`.
+- **Copilot (`.github/`, `AGENTS.md`)**: **sí se commitea** — Copilot lee estos archivos
+  desde el repo, así que viajan con `git clone`. El instalador no toca `.gitignore` para
+  el agente `copilot`.
