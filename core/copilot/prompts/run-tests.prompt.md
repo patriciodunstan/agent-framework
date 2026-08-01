@@ -1,6 +1,7 @@
 ---
 description: Ejecuta la suite de tests y el lint del proyecto y reporta resultados
 name: run-tests
+agent: 'agent'
 ---
 
 Ejecutá la verificación del proyecto y reportá.

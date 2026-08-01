@@ -28,9 +28,9 @@ PROFILE_WORK = {
 def test_context_has_all_keys():
     ctx = build_context(PRESET_REAL, PROFILE_WORK)
     expected = {
-        "stack", "language", "structure", "test_cmd", "lint_cmd", "typecheck_cmd",
-        "build_cmd", "precommit_steps", "profile", "git_host", "ci", "cloud",
-        "ticket_format", "branch_pattern", "maturity_warning",
+        "stack", "language", "code_globs", "structure", "test_cmd", "lint_cmd",
+        "typecheck_cmd", "build_cmd", "precommit_steps", "profile", "git_host", "ci",
+        "cloud", "ticket_format", "branch_pattern", "maturity_warning",
     }
     assert set(ctx) == expected
     assert all(isinstance(v, str) for v in ctx.values())

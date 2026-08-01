@@ -1,6 +1,7 @@
 ---
 description: Inicia un nuevo ticket — pregunta el nombre y crea la rama desde la base actualizada
 name: new-ticket
+agent: 'agent'
 ---
 
 Vas a iniciar un nuevo ticket.

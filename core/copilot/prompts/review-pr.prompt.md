@@ -2,6 +2,7 @@
 description: Revisión del PR antes de subirlo — calidad, tipos, manejo de errores y cumplimiento de las instrucciones
 name: review-pr
 argument-hint: "[code|types|errors|tests|all]"
+agent: 'ask'
 ---
 
 # Revisión de PR — ${stack}

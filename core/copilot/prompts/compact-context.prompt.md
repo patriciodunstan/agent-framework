@@ -1,6 +1,7 @@
 ---
 description: Guarda lo aprendido en la sesión en la documentación de contexto antes de compactar
 name: compact-context
+agent: 'agent'
 ---
 
 Antes de compactar la sesión, guardá lo aprendido.

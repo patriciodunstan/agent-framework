@@ -1,6 +1,7 @@
 ---
 description: Actualiza la documentación de contexto del proyecto con el estado actual — sin hacer commit
 name: update-context
+agent: 'agent'
 ---
 
 Analizá el diff (`git diff HEAD`) y los archivos modificados para determinar qué

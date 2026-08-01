@@ -23,6 +23,20 @@ def _prompt_files(core_dir: Path, context: dict[str, str]) -> list[OutputFile]:
     return out
 
 
+def _instruction_files(core_dir: Path, context: dict[str, str]) -> list[OutputFile]:
+    out = []
+    for f in sorted((core_dir / "copilot" / "instructions").glob("*.instructions.md")):
+        out.append(rendered(f, context, f".github/instructions/{f.name}"))
+    return out
+
+
+def _agent_files(core_dir: Path, context: dict[str, str]) -> list[OutputFile]:
+    out = []
+    for f in sorted((core_dir / "copilot" / "agents").glob("*.agent.md")):
+        out.append(rendered(f, context, f".github/agents/{f.name}"))
+    return out
+
+
 def generate(*, core_dir: Path, presets_dir: Path, addons_dir: Path,
              preset: dict, profile: dict, addons: list[dict],
              context: dict[str, str], scope: str) -> list[OutputFile]:
@@ -39,6 +53,8 @@ def generate(*, core_dir: Path, presets_dir: Path, addons_dir: Path,
             rendered(core_dir / "agents-md.md", context, "AGENTS.md"),
         ]
         files += _prompt_files(core_dir, context)
+        files += _instruction_files(core_dir, context)
+        files += _agent_files(core_dir, context)
         return files
 
     raise ValueError(f"scope desconocido: {scope}")

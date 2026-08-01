@@ -1,5 +1,6 @@
 stack = "python-fastapi"
 language = "Python 3.12+"
+code_globs = "**/*.py"
 maturity = "real"
 skills = ["async-python-patterns", "fastapi-templates", "python-testing-patterns",
           "python-design-patterns", "sql-optimization-patterns"]

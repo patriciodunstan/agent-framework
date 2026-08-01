@@ -1,6 +1,7 @@
 ---
 description: Cierra un ticket — actualiza contexto, hace commit, push y crea el PR
 name: finish-ticket
+agent: 'agent'
 ---
 
 Vas a cerrar el ticket actual.
