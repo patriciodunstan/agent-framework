@@ -52,6 +52,8 @@ def generate(*, core_dir: Path, presets_dir: Path, addons_dir: Path,
             files.append(rendered(f, context, f".claude/agents/{f.name}"))
         for f in sorted((core_dir / "context-templates").glob("*.md")):
             files.append(rendered(f, context, f".claude/context/{f.name}"))
+        for f in sorted((core_dir / "hooks").glob("*.py")):
+            files.append(OutputFile(f".claude/hooks/{f.name}", read_text(f)))
         files += _copy_skill_dirs(presets_dir / preset["stack"] / "skills",
                                   preset["skills"], context)
         for addon in addons:

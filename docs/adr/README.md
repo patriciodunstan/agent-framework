@@ -23,5 +23,6 @@ estado `reemplazada por ADR-NNNN`. No se borran los ADR — son registro histór
 | [0002](0002-tres-ejes-scope-stack-profile.md) | Modelo core + scope×stack×profile + addons | proyecto | aceptada |
 | [0003](0003-cero-dependencias-toml.md) | Instalador Python cero-deps + TOML + Python 3.11+ | proyecto | aceptada |
 | [0004](0004-generador-copilot.md) | Generador GitHub Copilot vía `--agent`, reutilizando `core/` | proyecto | aceptada |
+| [0005](0005-hooks-de-contexto.md) | Automatizar manejo de contexto vía hooks de Claude Code | proyecto | aceptada |
 
 <!-- origen: core/adr/README.md (adaptado, Ámbito: proyecto) -->
