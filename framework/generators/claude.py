@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from framework.generators.common import read_text, rendered, standards_body
+from framework.generators.common import read_text, rendered, skill_dirs, standards_body
 from framework.model import OutputFile
 from framework.render import render
 
@@ -12,19 +12,6 @@ def _copy_command_dir(core_dir: Path, sub: str, context: dict[str, str]) -> list
     out = []
     for f in sorted((core_dir / "commands" / sub).glob("*.md")):
         out.append(rendered(f, context, f".claude/commands/{f.name}"))
-    return out
-
-
-def _copy_skill_dirs(base: Path, skills: list[str], context: dict[str, str]) -> list[OutputFile]:
-    out = []
-    for skill in skills:
-        skill_dir = base / skill
-        if not skill_dir.exists():
-            continue
-        for f in sorted(skill_dir.rglob("*")):
-            if f.is_file():
-                rel = f.relative_to(skill_dir).as_posix()
-                out.append(rendered(f, context, f".claude/skills/{skill}/{rel}"))
     return out
 
 
@@ -54,11 +41,11 @@ def generate(*, core_dir: Path, presets_dir: Path, addons_dir: Path,
             files.append(rendered(f, context, f".claude/context/{f.name}"))
         for f in sorted((core_dir / "hooks").glob("*.py")):
             files.append(OutputFile(f".claude/hooks/{f.name}", read_text(f)))
-        files += _copy_skill_dirs(presets_dir / preset["stack"] / "skills",
-                                  preset["skills"], context)
+        files += skill_dirs(presets_dir / preset["stack"] / "skills",
+                            preset["skills"], context, ".claude/skills")
         for addon in addons:
-            files += _copy_skill_dirs(addons_dir / addon["addon"] / "skills",
-                                      addon["skills"], context)
+            files += skill_dirs(addons_dir / addon["addon"] / "skills",
+                                addon["skills"], context, ".claude/skills")
         return files
 
     raise ValueError(f"scope desconocido: {scope}")

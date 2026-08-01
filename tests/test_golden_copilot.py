@@ -49,6 +49,33 @@ def test_copilot_project_emits_path_instructions_and_agents(tmp_path):
     _no_unresolved(tmp_path)
 
 
+def test_copilot_parity_skills_context_adr(tmp_path):
+    """Paridad con Claude: skills de stack, memoria de contexto y scaffold ADR."""
+    code = main(["--scope", "project", "--agent", "copilot", "--stack", "python-fastapi",
+                 "--profile", "work", "--addons", "docker", "--target", str(tmp_path),
+                 "--root", str(ROOT)])
+    assert code == 0
+    # skills de stack como Agent Skills de Copilot (.github/skills/<name>/SKILL.md)
+    assert (tmp_path / ".github" / "skills" / "fastapi-templates" / "SKILL.md").exists()
+    # skill de addon también
+    assert (tmp_path / ".github" / "skills" / "docker-patterns" / "SKILL.md").exists()
+    # memoria de proyecto en docs/context/
+    ctx = tmp_path / "docs" / "context"
+    for name in ["MEMORY.md", "architecture.md", "api-endpoints.md", "data-models.md",
+                 "services-layer.md"]:
+        assert (ctx / name).exists(), name
+    # MEMORY.md es la variante Copilot (no menciona .claude/)
+    mem = (ctx / "MEMORY.md").read_text(encoding="utf-8")
+    assert ".github/copilot-instructions.md" in mem
+    assert ".claude/" not in mem
+    # scaffold ADR (docs neutrales)
+    assert (tmp_path / "docs" / "adr" / "README.md").exists()
+    assert (tmp_path / "docs" / "adr" / "template.md").exists()
+    # sigue sin generar nada de Claude
+    assert not (tmp_path / ".claude").exists()
+    _no_unresolved(tmp_path)
+
+
 def test_copilot_prompts_carry_agent_field(tmp_path):
     code = main(["--scope", "project", "--agent", "copilot", "--stack", "react-vite",
                  "--profile", "personal", "--target", str(tmp_path), "--root", str(ROOT)])

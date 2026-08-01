@@ -9,7 +9,7 @@ Vas a cerrar el ticket actual.
 ## 1. Analizá qué cambió
 
 Revisá el diff (`git diff HEAD`) y determiná qué documentación de contexto del proyecto
-conviene actualizar (por ejemplo `.github/copilot-instructions.md` o `docs/`): endpoints,
+conviene actualizar (`docs/context/` o `.github/copilot-instructions.md`): endpoints,
 modelos, servicios, arquitectura o reglas generales. Editá solo las secciones afectadas.
 
 ## 2. Commit

@@ -21,3 +21,19 @@ def standards_body(core_dir: Path, context: dict[str, str]) -> str:
     fragments = sorted((core_dir / "standards").glob("*.md"))
     joined = "\n".join(read_text(f) for f in fragments)
     return render(joined, context, source="core/standards/*")
+
+
+def skill_dirs(base: Path, skills: list[str], context: dict[str, str],
+               dest_prefix: str) -> list[OutputFile]:
+    """Copia (renderizando) los skills declarados bajo `base` a `<dest_prefix>/<skill>/…`.
+    Formato SKILL.md común a Claude y Copilot (Agent Skills es estándar abierto)."""
+    out = []
+    for skill in skills:
+        skill_dir = base / skill
+        if not skill_dir.exists():
+            continue
+        for f in sorted(skill_dir.rglob("*")):
+            if f.is_file():
+                rel = f.relative_to(skill_dir).as_posix()
+                out.append(rendered(f, context, f"{dest_prefix}/{skill}/{rel}"))
+    return out

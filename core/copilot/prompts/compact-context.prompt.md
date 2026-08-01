@@ -9,7 +9,7 @@ Antes de compactar la sesión, guardá lo aprendido.
 ## 1. Revisá qué se aprendió
 
 Identificá información nueva de esta sesión que aún no esté en la documentación de
-contexto del proyecto (por ejemplo `.github/copilot-instructions.md` o `docs/`):
+contexto del proyecto (`docs/context/` o `.github/copilot-instructions.md`):
 endpoints nuevos o confirmados, comportamientos no documentados, bugs y sus causas raíz,
 decisiones de diseño, y trabajo pendiente para próximos tickets.
 
