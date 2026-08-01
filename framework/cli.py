@@ -6,15 +6,22 @@ import sys
 from pathlib import Path
 
 from framework.context import build_context
-from framework.generators.claude import generate
+from framework.generators import claude as claude_gen
+from framework.generators import copilot as copilot_gen
 from framework.loader import load_addon, load_preset, load_profile
 from framework.model import ConfigError, InstallReport
 from framework.writer import ensure_line, write_tree
+
+# Registro de generadores por agente. Cada uno expone generate(...) con la misma firma.
+GENERATORS = {"claude": claude_gen.generate, "copilot": copilot_gen.generate}
+# Línea a asegurar en .gitignore por agente (None = no se ignora nada).
+GITIGNORE_ENTRY = {"claude": ".claude/", "copilot": None}
 
 
 def _parse(argv: list[str] | None) -> argparse.Namespace:
     p = argparse.ArgumentParser(prog="install.py", description="Configurador de agentes")
     p.add_argument("--scope", required=True, choices=["global", "project"])
+    p.add_argument("--agent", default="claude", choices=["claude", "copilot"])
     p.add_argument("--stack")
     p.add_argument("--profile", required=True)
     p.add_argument("--addons", default="")
@@ -49,6 +56,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     context = build_context(preset, profile)
+    generate = GENERATORS[args.agent]
     files = generate(core_dir=root / "core", presets_dir=root / "presets",
                      addons_dir=root / "addons", preset=preset, profile=profile,
                      addons=addons, context=context, scope=args.scope)
@@ -57,8 +65,9 @@ def main(argv: list[str] | None = None) -> int:
     write_tree(target, files, report)
     if preset["maturity"] == "plantilla-base":
         report.warnings.append(f"preset '{preset['stack']}' es plantilla-base, sin probar")
-    if args.scope == "project":
-        ensure_line(target / ".gitignore", ".claude/", report)
+    gitignore_entry = GITIGNORE_ENTRY[args.agent]
+    if args.scope == "project" and gitignore_entry:
+        ensure_line(target / ".gitignore", gitignore_entry, report)
 
     print(f"Creados ({len(report.created)}): {', '.join(report.created) or '—'}")
     print(f"Ya existían ({len(report.skipped)}): {', '.join(report.skipped) or '—'}")

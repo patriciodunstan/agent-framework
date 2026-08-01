@@ -1,5 +1,6 @@
 stack = "react-vite"
 language = "TypeScript + React (Vite)"
+code_globs = "**/*.ts,**/*.tsx"
 maturity = "real"
 skills = []
 precommit = ["lint", "build"]

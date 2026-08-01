@@ -1,5 +1,6 @@
 stack = "aws-lambda"
 language = "Python 3.12 (AWS Lambda)"
+code_globs = "**/*.py"
 maturity = "plantilla-base"
 skills = ["async-python-patterns"]
 precommit = ["test", "lint"]

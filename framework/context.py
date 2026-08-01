@@ -26,6 +26,7 @@ def build_context(preset: dict, profile: dict) -> dict[str, str]:
     ctx: dict[str, str] = {
         "stack": preset["stack"],
         "language": preset["language"],
+        "code_globs": preset.get("code_globs", "**"),
         "structure": preset["structure"],
         "precommit_steps": _precommit_steps(preset),
         "profile": profile["profile"],

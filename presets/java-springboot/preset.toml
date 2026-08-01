@@ -1,5 +1,6 @@
 stack = "java-springboot"
 language = "Java 21 + Spring Boot"
+code_globs = "**/*.java"
 maturity = "plantilla-base"
 skills = []
 precommit = ["test", "build"]

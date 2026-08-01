@@ -6,5 +6,30 @@
       "args": ["-y", "@upstash/context7-mcp"],
       "description": "Documentación actualizada de librerías y frameworks"
     }
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/load_context.py",
+            "statusMessage": "Recargando memoria del proyecto..."
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "manual|auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/snapshot_transcript.py"
+          }
+        ]
+      }
+    ]
   }
 }

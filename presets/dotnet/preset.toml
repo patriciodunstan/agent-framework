@@ -1,5 +1,6 @@
 stack = "dotnet"
 language = "C# / .NET 8"
+code_globs = "**/*.cs"
 maturity = "plantilla-base"
 skills = []
 precommit = ["test", "build"]
