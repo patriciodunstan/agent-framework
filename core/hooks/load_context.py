@@ -9,6 +9,10 @@ from pathlib import Path
 
 
 def main() -> int:
+    # En Windows la consola por defecto es cp1252: sin esto los acentos y las rayas
+    # llegan a Claude como mojibake.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     ctx_dir = Path(__file__).resolve().parent.parent / "context"
     if not ctx_dir.is_dir():
         return 0
