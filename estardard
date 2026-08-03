@@ -1,0 +1,65 @@
+Naturaleza del gasto
+Este proyecto no consume tokens al ejecutarse (es Python puro, cero deps). El gasto está en lo que genera: los archivos que se cargan en el contexto de Claude Code en cada proyecto donde se instala. Hay tres categorías con economías muy distintas:
+
+Categoría	Cuándo se carga	Peso actual
+Permanente (CLAUDE.md global + proyecto + AGENTS.md + hook)	Cada turno, todo el prefijo cacheado	~3.850 tok
+Hook SessionStart	startup + resume + compact	~1.018 tok (plantillas vacías)
+Skills	Solo al invocarse	3.000–6.475 tok c/u
+Commands	Solo al invocarse	226–738 tok c/u
+Desglose del bloque permanente:
+
+Archivo	Bytes	Tokens
+~/.claude/CLAUDE.md (header + 9 standards)	9.362	~2.340
+CLAUDE.md del proyecto	1.556	~389
+AGENTS.md	426	~106
+Hook → .claude/context/*	4.073	~1.018
+El multiplicador real: ese bloque entra en cada llamada a la API. Sesión de 40 turnos ≈ 1 cache-write + 39 cache-reads ≈ 20k tokens facturables solo por instrucciones. Y cada /compact invalida el caché y dispara el hook otra vez. En un proyecto maduro los .claude/context/*.md no están vacíos — crecen a 10–20 KB, así que el bloque permanente real ronda 5.500–7.000 tok, no 3.850.
+
+Dónde está el desperdicio (verificado)
+1. Standards que repiten lo que el modelo ya sabe. 08-seguridad.md enumera OWASP Top 10 y una tabla de "JWT vs Session vs OAuth2" — conocimiento genérico de entrenamiento, no política del proyecto. 09-testing.md explica qué es el ciclo Red-Green-Refactor. Eso cuesta tokens cada turno para reafirmar algo que no cambia el comportamiento. Lo que sí vale es la política: umbrales de cobertura, "no desactivar tests".
+
+2. 05-multiagente.md (1.873 B) duplica información que el harness ya inyecta. Verificado en esta sesión: mi propio contexto ya trae el bloque "Available agent types for the Agent tool" con nombre, descripción y herramientas de cada agente. La tabla del standard es una copia desactualizable de eso. Es el archivo más caro de los nueve.
+
+3. Solapamiento 03 ↔ 04. 03-verificar-no-inferir.md y 04-anti-alucinacion.md dicen lo mismo con distinta redacción ("verificar contra la realidad" / "nunca asumir").
+
+4. El hook es el costo más silencioso. load_context.py:15-22 vuelca todos los .md de .claude/context/ completos. Y el matcher incluye compact — o sea, justo después de compactar para liberar contexto, se reinyectan varios miles de tokens. Además project.md:19-25 ya lista esos archivos con su descripción: el índice se paga dos veces.
+
+5. Skills monolíticos. python-testing-patterns son 1.050 líneas / 6.475 tok en un solo SKILL.md. Al invocarlo entra entero aunque solo necesites la sección de fixtures. Tiene 12 secciones H2 perfectamente separables. La buena noticia: common.py:35 ya usa rglob("*"), así que soporta references/ sin tocar el generador.
+
+6. async-python-patterns está duplicado byte a byte entre python-fastapi y aws-lambda (md5 idéntico). No cuesta tokens, pero son dos archivos de 20 KB que divergirán.
+
+Plan propuesto
+Prioridad por retorno (tokens ahorrados × frecuencia):
+
+#	Cambio	Ahorro	Riesgo
+1	Reescribir los 9 standards: eliminar conocimiento genérico, conservar toda política y regla accionable	2.340 → ~1.000 tok/turno	Bajo
+2	Hook: inyectar MEMORY.md completo + índice (nombre + primer H2) del resto	~1.018 → ~300 tok, ×cada compact	Bajo
+3	Partir los 3 skills grandes en SKILL.md índice + references/*.md	6.475 → ~1.800 por invocación	Medio
+4	Quitar de project.md la lista de contextos (la da el hook) y la tabla de commands (el harness ya lista los slash commands)	389 → ~250 tok/turno	Bajo
+5	Deduplicar async-python-patterns a presets/_shared/skills/	0 tok, −20 KB repo	Medio (toca loader.py)
+Resultado esperado: bloque permanente 3.854 → ~1.450 tok (−62%), e invocación de skill típica −70%.
+
+El criterio para no perder calidad: se conserva toda instrucción que cambie el comportamiento (protocolos, umbrales, prohibiciones, formatos) y se elimina toda explicación de por qué algo es buena práctica. Ejemplo concreto de lo que propongo:
+
+
+ANTES (09-testing.md, 1.588 B)          DESPUÉS (~550 B)
+─────────────────────────────────       ─────────────────────────────
+"### Filosofía TDD                      "## Estándar 9: Testing
+ **Los tests PRIMERO...**                - TDD: test que falla → código
+ El ciclo TDD:                             mínimo → refactor.
+ 1. **Red**: Escribir un test que        - Cobertura: services 80%+,
+    falla (porque la funcionalidad         utils 90%+, routers 70%+.
+    no existe)                           - Prioriza integración sobre
+ 2. **Green**: Implementar el código       unidades mockeadas.
+    mínimo para pasar el test            - Test que falla tras un cambio:
+ 3. **Refactor**: Mejorar el código        NUNCA desactivarlo. Diagnosticar
+    manteniendo los tests verdes           si es bug o cambio intencional.
+ ### Estrategia de Testing               - Pre-commit: tests + lint del
+ 1. **Unit tests**: Lógica de negocio      proyecto. Falla → no commitear."
+    aislada (mock de...)
+ ..."
+Mismas reglas operativas, un tercio del peso.
+
+Los 13 tests actuales incluyen golden tests (test_golden.py), así que cualquier cambio de contenido los va a romper por diseño — habrá que actualizar los goldens conscientemente, no a ciegas.
+
+¿Procedo con el plan completo, o prefieres que empiece solo por los puntos 1 y 2 (los de mayor retorno y menor riesgo) para que evalúes el resultado antes de seguir?
