@@ -27,5 +27,6 @@ estado `reemplazada por ADR-NNNN`. No se borran los ADR — son registro histór
 | [0006](0006-copilot-v2-1-instructions-agents.md) | Copilot v2.1 — path-specific instructions, custom agents y campo `agent` | proyecto | aceptada |
 | [0007](0007-copilot-paridad-con-claude.md) | Paridad Copilot↔Claude — skills, memoria de contexto y scaffold ADR | proyecto | aceptada |
 | [0008](0008-copilot-global-vscode.md) | Copilot global para VS Code — prompts e instructions vía settings | proyecto | aceptada |
+| [0009](0009-presupuesto-de-contexto.md) | Presupuesto de contexto — divulgación progresiva en lo que se genera | proyecto | aceptada |
 
 <!-- origen: core/adr/README.md (adaptado, Ámbito: proyecto) -->

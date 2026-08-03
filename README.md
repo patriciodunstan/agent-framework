@@ -57,6 +57,13 @@ a su formato:
 Define comandos de test/lint/build/typecheck, estructura de carpetas y skills
 técnicas del preset.
 
+Los skills viven en `presets/<stack>/skills/<skill>/`, y los que comparten varios
+stacks una sola vez en `presets/_shared/skills/` (resuelto por fallback; los
+directorios de `presets/` con `_` inicial no son stacks elegibles). Cada skill es
+un `SKILL.md` de orientación —cuándo usarlo, conceptos, resumen— que indexa sus
+`references/*.md`: el cuerpo se carga solo cuando hace falta. Ver
+[ADR-0009](docs/adr/0009-presupuesto-de-contexto.md).
+
 ### profile — entorno de trabajo
 
 Ambos entornos usan **GitHub** como host de repos. El profile diferencia por CI,

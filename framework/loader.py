@@ -13,9 +13,12 @@ _VALID_MATURITY = {"real", "plantilla-base"}
 
 
 def available(directory: Path) -> list[str]:
+    """Nombres seleccionables. Los directorios con `_` inicial son internos
+    (p. ej. `presets/_shared/`, skills compartidos), no stacks elegibles."""
     if not directory.exists():
         return []
-    return sorted(p.name for p in directory.iterdir() if p.is_dir())
+    return sorted(p.name for p in directory.iterdir()
+                  if p.is_dir() and not p.name.startswith("_"))
 
 
 def _load_toml(path: Path) -> dict:

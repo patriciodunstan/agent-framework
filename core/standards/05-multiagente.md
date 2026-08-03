@@ -1,35 +1,26 @@
-## Estándar 5: Estrategia Multi-Agente
+## Estándar 5: Cuándo delegar en subagentes
 
-### Por qué usar subagentes
+Un subagente ahorra **ventana de contexto**, no tokens: arranca en frío y vuelve a
+pagar entero el system prompt y las definiciones de herramientas. Por defecto se
+trabaja en la sesión principal.
 
-Los subagentes **protegen el contexto principal** de la sesión. Cada vez que Claude lee muchos archivos o genera código largo, consume tokens del contexto que no se recuperan. Un `Explore` agent puede leer 50 archivos sin contaminar la sesión principal.
+Delegar solo cuando hay que leer mucho para responder poco:
 
-### Cuándo usar cada tipo de agente
+- Barrido amplio (muchos archivos o directorios) del que solo interesa la
+  conclusión, no el contenido.
+- La alternativa realista es llenar el contexto y tener que compactar —compactar
+  pierde información y recalienta todo el prefijo.
+- Tareas genuinamente independientes que corren en paralelo.
 
-| Caso | Agente | Razón |
-|------|--------|-------|
-| Explorar codebase (>3 archivos) | `Explore` | Aísla lecturas masivas del contexto principal |
-| Diseñar arquitectura o plan | `Plan` | Razonamiento profundo sin contaminar el contexto |
-| Búsquedas amplias (keywords, patrones) | `Explore` | Más eficiente que múltiples Grep manuales |
-| Tareas paralelas independientes | `general-purpose` | Paralelización real; lanzar en background |
-| Preguntas sobre Claude Code/API | `claude-code-guide` | Especializado, no usa tokens del contexto principal |
+No delegar para leer unos pocos archivos concretos ni para algo que ya está en la
+sesión: hacerlo directo es más barato y más fiable.
 
-### Reglas de uso de agentes
+Al delegar: handoff explícito (archivos clave, decisiones ya tomadas,
+restricciones), porque el subagente no ve la conversación. Su informe es un
+resumen con pérdida — verificar contra el código lo que sea crítico antes de
+actuar. No repetir trabajo que otro agente ya hizo.
 
-1. **Delegar exploración siempre** — Si necesito leer más de 3 archivos para entender algo, usar `Explore` en lugar de leer directamente.
-2. **Paralelizar cuando sea posible** — Lanzar múltiples agentes en un solo mensaje si las tareas son independientes.
-3. **No duplicar trabajo** — Si un agente ya investigó algo, usar su resultado directamente.
-4. **Handoff de contexto explícito** — Al delegar, incluir en el prompt: archivos clave, decisiones ya tomadas, restricciones del proyecto.
+El harness ya inyecta la lista de agentes disponibles con su descripción; elegir
+de ahí.
 
-### Patrón para tareas complejas
-
-```
-Tarea compleja (>5 archivos o >30 min estimado):
-
-1. Explore agent  → mapear el codebase relevante
-2. Plan agent     → diseñar la solución con el mapa
-3. Claude principal → implementar con el plan validado
-4. Explore agent  → verificar coherencia de los cambios
-```
-
-<!-- origen: ~/.claude/CLAUDE.md §Estrategia Multi-Agente -->
+<!-- origen: ~/.claude/CLAUDE.md §Estrategia Multi-Agente (invertido el default en ADR-0009: delegar era contraproducente para coste y fiabilidad) -->

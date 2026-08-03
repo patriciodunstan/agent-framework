@@ -3,7 +3,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from framework.generators.common import read_text, rendered, skill_dirs, standards_body
+from framework.generators.common import (
+    SHARED_SKILLS,
+    read_text,
+    rendered,
+    skill_dirs,
+    standards_body,
+    strip_provenance,
+)
 from framework.model import OutputFile
 from framework.render import render
 
@@ -19,8 +26,9 @@ def generate(*, core_dir: Path, presets_dir: Path, addons_dir: Path,
              preset: dict, profile: dict, addons: list[dict],
              context: dict[str, str], scope: str) -> list[OutputFile]:
     if scope == "global":
-        header = render(read_text(core_dir / "claude-md" / "global-header.md"), context,
-                        source="core/claude-md/global-header.md")
+        header = strip_provenance(
+            render(read_text(core_dir / "claude-md" / "global-header.md"), context,
+                   source="core/claude-md/global-header.md"))
         body = header + "\n" + standards_body(core_dir, context)
         files = [OutputFile(".claude/CLAUDE.md", body)]
         files += _copy_command_dir(core_dir, "global", context)
@@ -42,7 +50,8 @@ def generate(*, core_dir: Path, presets_dir: Path, addons_dir: Path,
         for f in sorted((core_dir / "hooks").glob("*.py")):
             files.append(OutputFile(f".claude/hooks/{f.name}", read_text(f)))
         files += skill_dirs(presets_dir / preset["stack"] / "skills",
-                            preset["skills"], context, ".claude/skills")
+                            preset["skills"], context, ".claude/skills",
+                            fallback=presets_dir / SHARED_SKILLS)
         for addon in addons:
             files += skill_dirs(addons_dir / addon["addon"] / "skills",
                                 addon["skills"], context, ".claude/skills")

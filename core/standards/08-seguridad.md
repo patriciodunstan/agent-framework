@@ -1,28 +1,12 @@
 ## Estándar 8: Seguridad
 
-### Principios OWASP Top 10
+- Validar y sanitizar el input de todos los endpoints (XSS, SQL injection).
+- Autenticación robusta y autorización por rol/recurso (RBAC), explícitas.
+- Headers de seguridad configurados: CORS, CSP, HSTS.
+- Secrets: nunca en el repo. `.env` en desarrollo (ignorado por git), vault
+  gestionado en producción (Key Vault, Secrets Manager). Rotar credenciales.
 
-- Validación de inputs en todos los endpoints
-- Sanitización de datos para prevenir XSS, SQL Injection
-- Autenticación robusta (JWT, OAuth2)
-- Autorización por roles/recursos (RBAC)
-- Gestión segura de secrets (environment variables, vault)
-- Headers de seguridad (CORS, CSP, HSTS)
-
-### Autenticación/Authorization Patterns
-
-| Patrón | Uso |
-|--------|-----|
-| JWT + Refresh tokens | APIs stateless, microservicios |
-| Session + Redis | APIs tradicionales, monolitos |
-| OAuth2 / OIDC | Integración con terceros, SSO |
-| API Keys | Servicios internos, webhooks |
-
-### Secret Management
-
-- Nunca commitear secrets en el repo
-- Usar `.env` files para desarrollo (en `.gitignore`)
-- Usar vault services para producción (Key Vault, Secrets Manager)
-- Rotar credentials regularmente
+La elección del patrón de autenticación (JWT + refresh, sesión + Redis,
+OAuth2/OIDC, API keys) se registra como ADR.
 
 <!-- origen: ~/.claude/CLAUDE.md §Seguridad -->

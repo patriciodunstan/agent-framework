@@ -1,62 +1,44 @@
 ---
-description: Analiza el estado del contexto actual, advierte si está por llenarse y prepara un resumen antes de compactar. Usar antes de /compact o cuando la sesión sea larga.
+description: Guarda en memoria persistente lo aprendido en la sesión y recomienda si conviene /clear o /compact. Usar antes de cambiar de tarea o cuando el contexto se esté llenando.
 allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "Bash"]
 ---
 
 # Gestión de Contexto y Tokens
 
+El valor de este command es **no perder lo aprendido** al liberar contexto. El
+porcentaje de uso real lo reporta el harness (`/context`): no estimarlo a partir
+del número de turnos ni presentarlo como medición (Estándar 3).
+
 ## Tu tarea
 
-### 1. Evaluar el estado actual del contexto
+### 1. Guardar lo que no sobrevive
 
-Estima el nivel de uso del contexto basándote en:
-- Cantidad de mensajes intercambiados en la sesión
-- Cantidad de archivos leídos y código generado
-- Si ya hubo una compactación automática previa
+Revisar qué se aprendió en esta sesión que **no** esté ya en los archivos de
+memoria del proyecto (`.claude/context/`, o `~/.claude/projects/*/memory/`):
 
-Clasifica el estado en uno de estos niveles:
-- **VERDE**: Sesión corta, contexto libre. Continuar normal.
-- **AMARILLO**: Sesión mediana (>15 turnos o varios archivos leídos). Considerar /compact pronto.
-- **ROJO**: Sesión larga (>25 turnos o mucho código generado). Compactar AHORA antes de seguir.
+- Decisiones técnicas tomadas y su porqué
+- Bugs encontrados y su causa real (verificada, no supuesta)
+- Patrones o restricciones descubiertos en el código
+- Trabajo pendiente y dónde quedó
 
-### 2. Si el estado es AMARILLO o ROJO — preparar antes de compactar
+Escribirlo en el archivo de memoria que corresponda. Si es una decisión de
+arquitectura o convención, va a `docs/adr/` (Estándar 1), no a la memoria.
 
-Antes de que el usuario ejecute `/compact`:
+### 2. Recomendar cómo seguir
 
-a) **Resumir lo importante de la sesión actual** que NO esté ya guardado en los archivos de memoria del proyecto (`.claude/context/` o `~/.claude/projects/*/memory/`):
-   - Decisiones técnicas tomadas en esta sesión
-   - Bugs encontrados y sus soluciones
-   - Patrones descubiertos
-   - Cambios pendientes de implementar
+- **Lo próximo no tiene relación con lo actual** → recomendar `/clear`. No resume
+  nada y arranca con el prefijo limpio: es la opción más barata.
+- **Hay que seguir con la misma tarea y falta espacio** → recomendar `/compact`.
+  Cuesta un pase de resumen y recalentar el prefijo, y pierde detalle; por eso se
+  hace después de guardar (paso 1), no antes.
+- **Hay espacio de sobra** → no hacer nada. Compactar sin necesidad gasta.
 
-b) **Guardar ese resumen** en el archivo de memoria correspondiente del proyecto activo.
-
-c) **Avisar al usuario** con el mensaje:
+### 3. Informar
 
 ```
-⚠️ CONTEXTO [AMARILLO/ROJO]
-- Estado: [descripción breve]
-- Recomendación: Ejecuta /compact ahora
-- Ya guardé el resumen de esta sesión en [archivo]
-- Después de /compact podrás continuar sin perder contexto
+Guardado en: [archivo(s)]
+Pendiente: [qué queda por hacer]
+Recomendación: /clear | /compact | seguir sin liberar
 ```
 
-### 3. Si el estado es VERDE
-
-Informar brevemente:
-```
-✓ CONTEXTO OK
-- Sesión: [corta/mediana]
-- Puedes continuar trabajando
-- Sugerencia: usa /manage-context periódicamente en sesiones largas
-```
-
-### 4. Recomendaciones de eficiencia
-
-Recordar al usuario estas buenas prácticas para esta sesión:
-- Usar /compact proactivamente (no esperar a que sea automático)
-- Iniciar nueva sesión para tareas completamente distintas
-- El contexto se compacta automáticamente cuando se llena — /compact manual es más eficiente
-- Los archivos `.claude/context/` son la memoria persistente — siempre actualizarlos antes de compactar
-
-<!-- origen: ~/.claude/commands/manage-context.md -->
+<!-- origen: ~/.claude/commands/manage-context.md (ADR-0009: quitada la clasificación VERDE/AMARILLO/ROJO por turnos, que fabricaba un dato no verificable) -->

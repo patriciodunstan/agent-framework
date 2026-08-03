@@ -14,7 +14,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from framework.generators.common import read_text, rendered, skill_dirs, standards_body
+from framework.generators.common import (
+    SHARED_SKILLS,
+    read_text,
+    rendered,
+    skill_dirs,
+    standards_body,
+    strip_provenance,
+)
 from framework.model import OutputFile
 from framework.render import render
 
@@ -56,8 +63,9 @@ def generate(*, core_dir: Path, presets_dir: Path, addons_dir: Path,
              preset: dict, profile: dict, addons: list[dict],
              context: dict[str, str], scope: str) -> list[OutputFile]:
     if scope == "global":
-        header = render(read_text(core_dir / "copilot" / "instructions-global-header.md"),
-                        context, source="core/copilot/instructions-global-header.md")
+        header = strip_provenance(
+            render(read_text(core_dir / "copilot" / "instructions-global-header.md"),
+                   context, source="core/copilot/instructions-global-header.md"))
         std_body = standards_body(core_dir, context)
         files = [OutputFile(".copilot/copilot-instructions.md", header + "\n" + std_body)]
         # Para VS Code Copilot Chat: estándares globales como instructions folder + prompts
@@ -86,7 +94,8 @@ def generate(*, core_dir: Path, presets_dir: Path, addons_dir: Path,
         files.append(rendered(core_dir / "adr" / "template.md", context, "docs/adr/template.md"))
         # Skills de stack y addons (Agent Skills, mismo SKILL.md que Claude)
         files += skill_dirs(presets_dir / preset["stack"] / "skills",
-                            preset["skills"], context, ".github/skills")
+                            preset["skills"], context, ".github/skills",
+                            fallback=presets_dir / SHARED_SKILLS)
         for addon in addons:
             files += skill_dirs(addons_dir / addon["addon"] / "skills",
                                 addon["skills"], context, ".github/skills")

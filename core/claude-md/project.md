@@ -10,19 +10,8 @@ ${maturity_warning}
 - Entorno: **${profile}** — CI `${ci}`, nube `${cloud}`, host git `${git_host}`
 - Tickets: `${ticket_format}` — ramas `${branch_pattern}`
 
-## Al iniciar cada sesión
-
-Leer `.claude/context/MEMORY.md` (memoria portable del proyecto).
-
-## Archivos de Contexto
-
-Disponibles en `.claude/context/` — leer según el módulo en que se trabaje:
-
-- `.claude/context/MEMORY.md` — **Memoria del proyecto** (leer siempre al inicio)
-- `.claude/context/architecture.md` — Stack, estructura, patrones arquitectónicos
-- `.claude/context/api-endpoints.md` — Endpoints REST del proyecto
-- `.claude/context/data-models.md` — Modelos de datos y tipos
-- `.claude/context/services-layer.md` — Servicios y lógica de negocio
+La memoria del proyecto se inyecta sola al iniciar sesión: `.claude/context/MEMORY.md`
+completo, y el resto de `.claude/context/` como índice para leer bajo demanda.
 
 ## Protocolo pre-commit
 
@@ -30,15 +19,11 @@ ${precommit_steps}
 
 Si alguno falla → **NO commitear**. Primero arreglar, luego volver a correr, luego commitear.
 
-## Slash Commands
+## Slash commands
 
-| Comando | Descripción |
-|---------|-------------|
-| `/new-ticket` | Crea rama desde la base actualizada |
-| `/finish-ticket` | Actualiza `.claude/context/`, commit, push, PR |
-| `/review-pr` | Revisa código antes de commitear |
-| `/run-tests` | Ejecuta tests con cobertura |
-| `/update-context` | Actualiza `.claude/context/` sin commit |
-| `/compact-context` | Guarda sesión y prepara para `/compact` |
+`/new-ticket` rama desde la base actualizada · `/finish-ticket` contexto + commit +
+push + PR · `/review-pr` revisar antes de commitear · `/run-tests` tests con
+cobertura · `/update-context` actualiza `.claude/context/` · `/compact-context`
+guarda la sesión y prepara `/compact`
 
 <!-- origen: UDLA_backend_ssh/CLAUDE.md (generalizado) -->

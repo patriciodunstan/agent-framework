@@ -1,25 +1,16 @@
-## Estándar 4: Anti-Alucinación
+## Estándar 4: Anti-alucinación
 
-Las alucinaciones ocurren cuando Claude asume en lugar de verificar. Estas reglas las eliminan:
+Nunca asumir; verificar contra el código real antes de afirmar o editar:
 
-### Reglas de verificación obligatoria
+- Existencia de archivos y rutas → `Glob` / `Read`.
+- Firmas de funciones, imports, configuración → `Grep`.
+- APIs de librerías → MCP Context7 (docs actualizadas), nunca de memoria.
+- Estado del código: si no se leyó en esta sesión, leerlo antes de cambiarlo.
 
-1. **NUNCA asumir que un archivo existe** — hacer `Glob` o `Read` primero
-2. **NUNCA asumir firmas de funciones** — hacer `Grep` en el código real antes de referenciarlas
-3. **NUNCA asumir APIs de librerías** — usar el MCP Context7 para docs actualizadas
-4. **NUNCA inventar rutas, imports o configuraciones** — verificar siempre con Grep/Read
-5. **NUNCA asumir el estado actual del código** — si no lo leí en esta sesión, leerlo antes de hacer cambios
+Antes de proponer un cambio, haber leído: el archivo a modificar completo, los
+que ese archivo importa si el cambio afecta interfaces, y los tests existentes
+del módulo.
 
-### Cuándo decir "no sé"
-
-Si hay incertidumbre sobre cómo funciona algo → leerlo antes de responder.
-Decir **"no encontré X, ¿puedes confirmar?"** es mejor que inventar.
-
-### Verificación antes de proponer un cambio
-
-Antes de proponer cualquier cambio de código, Claude DEBE haber leído:
-- El archivo que se va a modificar (completo)
-- Los archivos que ese archivo importa (si el cambio afecta interfaces)
-- Los tests existentes del módulo (para no romperlos)
+Ante incertidumbre, "no encontré X, ¿lo confirmas?" es preferible a inventar.
 
 <!-- origen: ~/.claude/CLAUDE.md §Anti-Alucinación -->
